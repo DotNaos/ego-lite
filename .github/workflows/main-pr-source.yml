@@ -7,7 +7,8 @@ on:
 
 jobs:
   require-dev-source:
-    runs-on: ubuntu-latest
+    if: github.repository == 'citrolabs/ego-lite'
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '["arc-ego-lite"]') }}
     steps:
       - name: Require dev branch
         env:

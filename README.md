@@ -1,3 +1,5 @@
+> **Experimental DotNaos fork:** the first Linux remote-browser prototype uses the open-source SDK with a separate Chrome/Chromium process, not the native Ego Lite app. See [setup, tests and limitations](docs/linux-remote-prototype.md). Native VNC is currently observation-only; persistent logins and interactive handover are follow-up work.
+
 <div align="center">
 
 <img src="docs/assets/banner.png" alt="ego lite" width="100%" />
