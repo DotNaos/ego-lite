@@ -13,11 +13,13 @@ permissions:
   contents: read
 
 env:
-  SHOULD_RELEASE: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+  SHOULD_RELEASE: ${{ github.repository == 'citrolabs/ego-lite' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # External PR code is not automatically trusted on self-hosted runners.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '["arc-ego-lite"]') }}
     defaults:
       run:
         working-directory: package/ego-browser
@@ -49,9 +51,9 @@ jobs:
           path: package/ego-browser/dist/ego-browser-release-payload.tar.gz
 
   release:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.repository == 'citrolabs/ego-lite' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '["arc-ego-lite"]') }}
     permissions:
       contents: write
     defaults:

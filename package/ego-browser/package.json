@@ -14,8 +14,10 @@
     "prepare": "if [ \"$CI\" = \"true\" ]; then exit 0; fi; cd ../.. && lefthook install",
     "style:check": "prettier --check \"src/**/*.{ts,mjs,js}\" \"scripts/**/*.{ts,mjs,js}\" package.json README.md",
     "typecheck": "tsc --noEmit",
-    "test": "npm run build && npm run check:skill-translation && npm run typecheck && node --test \"src/**/*.test.mjs\"",
-    "validate:site-skills": "npm run build && EGO_BROWSER_AGENT_WORKSPACE=../../skills/ego-browser node dist/scripts/validate-site-skills.js"
+    "test": "npm run build && npm run check:skill-translation && npm run typecheck && node --test \"src/**/*.test.mjs\" && node --test scripts/remote-desktop.test.mjs scripts/fork-workflows.test.mjs",
+    "validate:site-skills": "npm run build && EGO_BROWSER_AGENT_WORKSPACE=../../skills/ego-browser node dist/scripts/validate-site-skills.js",
+    "remote:desktop": "node scripts/remote-desktop.mjs",
+    "test:remote-live": "node scripts/remote-desktop-smoke.mjs"
   },
   "engines": {
     "node": ">=22"

@@ -3,14 +3,14 @@ name: Star History
 on:
   schedule:
     # Daily at 04:17 UTC. Off the hour to avoid the top-of-hour Actions rush.
-    - cron: '17 4 * * *'
+    - cron: "17 4 * * *"
   workflow_dispatch:
     inputs:
       force:
         # The publish is normally gated on the star data moving, so a change to
         # the SVG post-processing alone would not reach the branch until the
         # next new star. This republishes from the restored chart on demand.
-        description: 'Republish even if the star data has not changed'
+        description: "Republish even if the star data has not changed"
         type: boolean
         default: false
 
@@ -36,7 +36,8 @@ env:
 
 jobs:
   star-history:
-    runs-on: ubuntu-24.04
+    if: github.repository == 'citrolabs/ego-lite'
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '["arc-ego-lite"]') }}
     steps:
       - uses: actions/checkout@v7.0.1
 

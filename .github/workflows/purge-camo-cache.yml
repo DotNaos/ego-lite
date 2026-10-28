@@ -2,12 +2,13 @@ name: Purge Camo Cache
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 jobs:
   purge:
-    runs-on: ubuntu-latest
+    if: github.repository == 'citrolabs/ego-lite'
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '["arc-ego-lite"]') }}
     steps:
       - name: Purge star-history camo cache from README
         run: |

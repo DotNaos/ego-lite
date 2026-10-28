@@ -13,6 +13,7 @@ function workflow(name) {
 }
 
 function releaseGuards(github) {
+  github = { repository: "citrolabs/ego-lite", ...github };
   const source = workflow("ci");
   const expressions = [
     source.match(/SHOULD_RELEASE: \$\{\{\s*(.*?)\s*\}\}/)?.[1],
@@ -62,6 +63,19 @@ test("beta and stable tag pushes retain both release guards", () => {
       tag,
     );
   }
+});
+
+test("fork tags cannot package or publish upstream-style releases", () => {
+  for (const tag of ["v2.0.0-beta.9", "v2.0.0"])
+    assert.deepEqual(
+      releaseGuards({
+        repository: "DotNaos/ego-lite",
+        event_name: "push",
+        ref: `refs/tags/${tag}`,
+        ref_name: tag,
+      }),
+      [false, false],
+    );
 });
 
 function runSourceGuard(branch) {
