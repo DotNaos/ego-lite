@@ -17,7 +17,11 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Self-hosted ARC runners never run pull requests from other forks (this repository is public).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Default: the ephemeral ARC runner arc-ego-lite (DotNaos/gitops, clusters/os-pc/apps/arc).
+    # The repository variable EGO_LITE_RUNS_ON (JSON, e.g. "\"ubuntu-latest\"") temporarily overrides it.
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     defaults:
       run:
         working-directory: package/ego-browser
@@ -26,8 +30,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: package/ego-browser/package-lock.json
       - run: npm ci
       - run: npm run style:check
       - run: npm audit --registry=https://registry.npmjs.org --audit-level=moderate
@@ -51,7 +53,7 @@ jobs:
   release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     permissions:
       contents: write
     defaults:
