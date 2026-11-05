@@ -7,7 +7,10 @@ on:
 
 jobs:
   require-dev-source:
-    runs-on: ubuntu-latest
+    # Self-hosted ARC runners never run pull requests from other forks (this repository is public).
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Default: the ephemeral ARC runner arc-ego-lite; EGO_LITE_RUNS_ON (JSON) temporarily overrides it.
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     steps:
       - name: Require dev branch
         env:

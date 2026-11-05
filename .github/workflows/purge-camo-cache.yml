@@ -7,7 +7,8 @@ on:
 
 jobs:
   purge:
-    runs-on: ubuntu-latest
+    # Default: the ephemeral ARC runner arc-ego-lite; EGO_LITE_RUNS_ON (JSON) temporarily overrides it.
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     steps:
       - name: Purge star-history camo cache from README
         run: |

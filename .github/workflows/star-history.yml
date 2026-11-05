@@ -36,7 +36,8 @@ env:
 
 jobs:
   star-history:
-    runs-on: ubuntu-24.04
+    # Default: the ephemeral ARC runner arc-ego-lite; EGO_LITE_RUNS_ON (JSON) temporarily overrides it.
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     steps:
       - uses: actions/checkout@v7.0.1
 
