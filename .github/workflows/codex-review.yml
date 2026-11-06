@@ -27,7 +27,9 @@ jobs:
       ${{ github.event.pull_request.draft == false
       && github.event.pull_request.user.type != 'Bot'
       && github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: ubuntu-latest
+    # Self-hosted like the other ego-lite workflows (Oli 2026-11-06: "alles auf self hosted").
+    # Ephemeral ARC runner, same-repository PRs only (see the if: above).
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
