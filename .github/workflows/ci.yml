@@ -17,7 +17,11 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Self-hosted ARC runners never run pull requests from other forks (this repository is public).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Default: the ephemeral ARC runner arc-ego-lite (DotNaos/gitops, clusters/os-pc/apps/arc).
+    # The repository variable EGO_LITE_RUNS_ON (JSON, e.g. "\"ubuntu-latest\"") temporarily overrides it.
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     defaults:
       run:
         working-directory: package/ego-browser
@@ -26,8 +30,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: package/ego-browser/package-lock.json
       - run: npm ci
       - run: npm run style:check
       - run: npm audit --registry=https://registry.npmjs.org --audit-level=moderate
@@ -39,19 +41,11 @@ jobs:
         working-directory: plugins/ego
         run: npm test
       - run: npm run validate:site-skills
-      - name: Archive release payload
-        if: env.SHOULD_RELEASE == 'true'
-        run: tar -czf dist/ego-browser-release-payload.tar.gz -C dist/out .
-      - uses: actions/upload-artifact@v4
-        if: env.SHOULD_RELEASE == 'true'
-        with:
-          name: ego-browser-release-payload
-          path: package/ego-browser/dist/ego-browser-release-payload.tar.gz
 
   release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     permissions:
       contents: write
     defaults:
@@ -62,14 +56,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/download-artifact@v4
+      # Nothing is stored in GitHub Actions storage: the release job builds the payload itself
+      # from the tagged commit (the test job above has already passed on the same commit)
+      # instead of receiving it from the test job as an Actions artifact.
+      - uses: actions/setup-node@v4
         with:
-          name: ego-browser-release-payload
-          path: package/ego-browser/dist
-      - name: Extract release payload
+          node-version: 22
+      - name: Build release payload
+        if: env.SHOULD_RELEASE == 'true'
         run: |
-          mkdir -p dist/out
-          tar -xzf dist/ego-browser-release-payload.tar.gz -C dist/out
+          npm ci
+          npm run build
+          test -d dist/out
       - name: Resolve release channel
         id: release
         run: |
