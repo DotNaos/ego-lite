@@ -27,7 +27,9 @@ jobs:
       ${{ github.event.pull_request.draft == false
       && github.event.pull_request.user.type != 'Bot'
       && github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: ubuntu-latest
+    # Self-hosted like the other ego-lite workflows (Oli 2026-11-06: "alles auf self hosted").
+    # Ephemeral ARC runner, same-repository PRs only (see the if: above).
+    runs-on: ${{ fromJSON(vars.EGO_LITE_RUNS_ON || '"arc-ego-lite"') }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -150,7 +152,22 @@ jobs:
           - At most 10 findings, sorted by severity.
           EOF
 
+      - name: Check the Codex API key
+        id: codex-key
+        env:
+          CODEX_KEY: ${{ secrets.CODEX_OPENAI_API_KEY }}
+        run: |
+          # Without the key the action skips its proxy and fails with "Failed to read server info".
+          # Skip the review with a visible warning instead of failing every PR.
+          if [ -n "$CODEX_KEY" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::CODEX_OPENAI_API_KEY is not set in this repository; skipping the Codex review."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run Codex review
+        if: steps.codex-key.outputs.present == 'true'
         uses: openai/codex-action@v1.11
         with:
           # Custom gateway: responses-api-endpoint is the full Responses API URL for this action.
