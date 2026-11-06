@@ -12,6 +12,9 @@ on:
 permissions:
   contents: read
 
+env:
+  SHOULD_RELEASE: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+
 jobs:
   test:
     # Self-hosted ARC runners never run pull requests from other forks (this repository is public).
@@ -60,6 +63,7 @@ jobs:
         with:
           node-version: 22
       - name: Build release payload
+        if: env.SHOULD_RELEASE == 'true'
         run: |
           npm ci
           npm run build
